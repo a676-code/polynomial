@@ -1,27 +1,11 @@
+#include <algorithm>
+#include <cmath>
+#include <cctype>
 #include <iostream>
-#include "Polynomial.h"
+#include <vector>
+#include <sstream>
 using namespace std;
-
-void Polynomial::appendTerm(double c, int e)
-{
-    Term* curTerm;
-
-    Term* newTerm = new Term;
-    newTerm->coeff = c;
-    newTerm->expo = e;
-    newTerm->next = NULL;
-
-    if (!leading)
-    {
-        leading = newTerm;
-        trailing = newTerm;
-    }
-    else
-    {
-        trailing->next = newTerm;
-        trailing = newTerm;
-    }
-}
+#include "Polynomial.h"
 
 int Polynomial::getNumTerms()
 {
@@ -89,25 +73,4 @@ bool Polynomial::isEmpty()
         return true;
     else
         return false;
-}
-
-void Polynomial::printPolynomial()
-{
-    Term* curTerm;
-
-    if (!leading)
-    {
-        cout << "Polynomial empty";
-    }
-    else
-    {
-        curTerm = leading;
-        while(curTerm)
-        {
-            cout << curTerm->coeff << "^" << curTerm->expo;
-            if (curTerm != trailing)
-                cout << " + ";
-            curTerm = curTerm->next;
-        }
-    }
 }

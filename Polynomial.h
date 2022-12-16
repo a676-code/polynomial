@@ -85,6 +85,13 @@ Polynomial::Polynomial(string s)
 	}
 
     // building the polynomial
+    leading = NULL;
+    trailing = NULL;
+
+    for (int i; i < terms.size(); i++)
+        this->appendTerm(coeffs.at(i), exponents.at(i));
+    
+    this->printPolynomial();
 }
 
 Polynomial::~Polynomial()
@@ -94,6 +101,51 @@ Polynomial::~Polynomial()
     {
         delete curTerm;
         curTerm = curTerm->next;
+    }
+}
+
+void Polynomial::appendTerm(double c, int e)
+{
+    Term* curTerm;
+
+    Term* newTerm = new Term;
+    newTerm->coeff = c;
+    newTerm->expo = e;
+    newTerm->next = NULL;
+
+    if (!leading)
+    {
+        leading = newTerm;
+        trailing = newTerm;
+    }
+    else
+    {
+        trailing->next = newTerm;
+        trailing = newTerm;
+    }
+}
+
+void Polynomial::printPolynomial()
+{
+    Term* curTerm;
+
+    if (!leading)
+    {
+        cout << "Polynomial empty";
+    }
+    else
+    {
+        curTerm = leading;
+        while(curTerm)
+        {
+            if (abs(curTerm->coeff) != 1 || curTerm->expo == 1)
+                cout << curTerm->coeff;
+            if (curTerm->expo > 1)
+                cout << "x^" << curTerm->expo;
+            if (curTerm != trailing)
+                cout << " + ";
+            curTerm = curTerm->next;
+        }
     }
 }
 
