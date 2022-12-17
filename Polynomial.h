@@ -62,13 +62,14 @@ Polynomial::Polynomial(string s)
 
     // getting each term
     vector<string> terms;
+    bool firstTermNegative = false;
     bool negTerm = false;
     int pluspos = s.find("+");
     int minuspos= s.find("-");
     if (minuspos == 0)
     {
+        firstTermNegative = true;
         minuspos = s.find("-", 1);
-        negTerm = true;
     }
     cout << "\nm: " << minuspos << endl;
 
@@ -155,6 +156,9 @@ Polynomial::Polynomial(string s)
 
     cout << "\n";
 
+    if (firstTermNegative)
+        negTerm = true;
+
     int xpos = -1;
     int caretpos = -1;
     double coeff = -1;
@@ -182,11 +186,13 @@ Polynomial::Polynomial(string s)
 
         if (negTerm)
         {
+            cout << "cat\n";
             this->appendTerm(-1 * coeff, expo);
+            negTerm = false;
         }
         else
         {
-            cout << "DOG";
+            cout << "dog\n";
             this->appendTerm(coeff, expo);
         }
     }
