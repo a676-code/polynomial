@@ -71,7 +71,6 @@ Polynomial::Polynomial(string s)
         firstTermNegative = true;
         minuspos = s.find("-", 1);
     }
-    cout << "\nm: " << minuspos << endl;
 
     if (pluspos == -1 && minuspos == -1)
         terms.push_back(s);
@@ -103,8 +102,6 @@ Polynomial::Polynomial(string s)
     }
     else // plusses and minuses
     {
-        cout << "HAMBURGER\n";
-
         int signpos = -1;
         int signpos2 = -1;
         if (pluspos < minuspos)
@@ -159,42 +156,42 @@ Polynomial::Polynomial(string s)
     if (firstTermNegative)
         negTerm = true;
 
+    bool leadingNegative = false;
     int xpos = -1;
     int caretpos = -1;
     double coeff = -1;
     int expo = -1;
-    for (auto t : terms)
+    for (int i = 0; i < terms.size(); i++)
     {
-        cout << "t: " << t << endl;
-
-        if (t[0] == '-')
+        if (terms.at(i)[0] == '-')
+        {
             negTerm = true;
-        xpos = t.find("x");
-        caretpos = t.find("^");
+            leadingNegative = true;
+        }
+        xpos = terms.at(i).find("x");
+        caretpos = terms.at(i).find("^");
 
         if (xpos == 0 || caretpos <= 0)
             coeff = 1;
         else
-            coeff = stod(t.substr(0, xpos));
+            coeff = stod(terms.at(i).substr(0, xpos));
 
         if (xpos >= 0 && caretpos == -1)
             expo = 1;
         else if (xpos == -1 && caretpos == -1)
             expo = 0;
         else
-            expo = int(stod(t.substr(caretpos + 1)));
+            expo = int(stod(terms.at(i).substr(caretpos + 1)));
 
         if (negTerm)
         {
-            cout << "cat\n";
+            if (leadingNegative && i == 0)
+                coeff = coeff * -1;
             this->appendTerm(-1 * coeff, expo);
             negTerm = false;
         }
         else
-        {
-            cout << "dog\n";
             this->appendTerm(coeff, expo);
-        }
     }
     
     this->printPolynomial();
@@ -236,23 +233,28 @@ void Polynomial::printPolynomial()
     Term* curTerm;
 
     if (!leading)
-    {
         cout << "Polynomial empty";
-    }
     else
     {
         curTerm = leading;
         while(curTerm)
         {
+            // cout << "COEFF: " << curTerm->coeff << endl;
+
             if (abs(curTerm->coeff) != 1 || curTerm->expo == 0)
-                cout << curTerm->coeff;
+            {
+                if (curTerm->coeff < 0 && curTerm != leading)
+                    cout << curTerm->coeff * -1;
+                else
+                    cout << curTerm->coeff;
+            }
             if (curTerm->expo >= 1)
                 cout << "x";
             if (curTerm->expo > 1)
                 cout << "^" << curTerm->expo;
-            if (curTerm != trailing && curTerm->coeff >= 0)
+            if (curTerm != trailing && curTerm->next->coeff >= 0)
                 cout << " + ";
-            else if (curTerm != trailing && curTerm->coeff < 0)
+            else if (curTerm != trailing && curTerm->next->coeff < 0)
                 cout << " - ";
             curTerm = curTerm->next;
         }
