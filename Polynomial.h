@@ -94,7 +94,7 @@ Polynomial::Polynomial(string s)
         int minuspos2 = s.find("-", minuspos + 1);
         while (minuspos2 != string::npos)
         {
-            terms.push_back(s.substr(minuspos + 1, minuspos2 - minuspos - 1));
+            terms.push_back("-" + s.substr(minuspos + 1, minuspos2 - minuspos - 1));
             minuspos = minuspos2;
             minuspos2 = s.find("-", minuspos2 + 1);
         }
@@ -111,15 +111,17 @@ Polynomial::Polynomial(string s)
         }
         else 
         {
+            negTerm = true;
             signpos = minuspos;
             signpos2 = pluspos;
         }
+        // adding first term
         terms.push_back(s.substr(0, signpos));
+        // adding middle terms
         while (signpos2 != string::npos)
         {
             if (negTerm)
             {
-                cout << "SOMETHING";
                 terms.push_back("-" + s.substr(signpos + 1, signpos2 - signpos - 1));
                 negTerm = false;
             }
@@ -138,6 +140,7 @@ Polynomial::Polynomial(string s)
                 signpos2 = minuspos;
             }
         }
+        // adding last term
         if (negTerm)
         {
             terms.push_back("-" + s.substr(signpos + 1));
@@ -163,6 +166,8 @@ Polynomial::Polynomial(string s)
     int expo = -1;
     for (int i = 0; i < terms.size(); i++)
     {
+        cout << "TERM: "  << terms.at(i) << endl;
+
         if (terms.at(i)[0] == '-')
         {
             negTerm = true;
@@ -191,10 +196,10 @@ Polynomial::Polynomial(string s)
             negTerm = false;
         }
         else
-            this->appendTerm(coeff, expo);
+            this->appendTerm(coeff, expo);        
     }
-    
     this->printPolynomial();
+    cout << endl;
 }
 
 Polynomial::~Polynomial()
