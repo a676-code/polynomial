@@ -7,6 +7,7 @@
 #include <iostream>
 #include <vector>
 #include <sstream>
+#include <string>
 using namespace std;
 
 class Polynomial
@@ -60,36 +61,135 @@ Polynomial::Polynomial(string s)
 	}
 
     // getting each term
-	vector<string> terms = split(s, '+');
+    vector<string> terms;
+    bool negTerm = false;
+    int pluspos = s.find("+");
+    int minuspos= s.find("-");
+    if (minuspos == 0)
+    {
+        minuspos = s.find("-", 1);
+        negTerm = true;
+    }
+    cout << "\nm: " << minuspos << endl;
 
-    // splitting over ^'s, components contains (cx, e)
-	vector<vector<string> > components;
-	for (auto t : terms)
-		components.push_back(split(t, '^'));
+    if (pluspos == -1 && minuspos == -1)
+        terms.push_back(s);
+    // only plusses
+    else if (pluspos != -1 && minuspos == -1)
+    {
+        terms.push_back(s.substr(0, pluspos));
+        int pluspos2 = s.find("+", pluspos + 1);
+        while (pluspos2 != -1)
+        {
+            terms.push_back(s.substr(pluspos + 1, pluspos2 - pluspos - 1));
+            pluspos = pluspos2;
+            pluspos2 = s.find("+", pluspos2 + 1);
+        }
+        terms.push_back(s.substr(pluspos + 1));
+    }
+    // only minuses
+    else if (pluspos == -1 && minuspos != -1)
+    {
+        terms.push_back(s.substr(0, minuspos));
+        int minuspos2 = s.find("-", minuspos + 1);
+        while (minuspos2 != string::npos)
+        {
+            terms.push_back(s.substr(minuspos + 1, minuspos2 - minuspos - 1));
+            minuspos = minuspos2;
+            minuspos2 = s.find("-", minuspos2 + 1);
+        }
+        terms.push_back("-" + s.substr(minuspos + 1));
+    }
+    else // plusses and minuses
+    {
+        cout << "HAMBURGER\n";
 
-    // saving in coeffs and exponents
-	vector<double> coeffs;
-	vector<int> exponents;
-	for (int i = 0; i < terms.size(); i++)
-	{
-		vector<string> pair = split(components[i][0], 'x');
-		if (pair[0] == "")
-			coeffs.push_back(1.0);
-		else
-			coeffs.push_back(stod(pair[0]));
-
-		if (components[i].size() > 1)
-			exponents.push_back(stoi(components[i][1]));
-		else
-			exponents.push_back(1);
-	}
+        int signpos = -1;
+        int signpos2 = -1;
+        if (pluspos < minuspos)
+        {
+            signpos = pluspos;
+            signpos2 = minuspos;
+        }
+        else 
+        {
+            signpos = minuspos;
+            signpos2 = pluspos;
+        }
+        terms.push_back(s.substr(0, signpos));
+        while (signpos2 != string::npos)
+        {
+            if (negTerm)
+            {
+                cout << "SOMETHING";
+                terms.push_back("-" + s.substr(signpos + 1, signpos2 - signpos - 1));
+                negTerm = false;
+            }
+            else
+            {
+                terms.push_back(s.substr(signpos + 1, signpos2 - signpos - 1));
+            }
+            signpos = signpos2;
+            pluspos = s.find("+", signpos2 + 1);
+            minuspos = s.find("-", signpos2 + 1);
+            if (pluspos < minuspos)
+                signpos2 = pluspos;
+            else
+            {
+                negTerm = true;
+                signpos2 = minuspos;
+            }
+        }
+        if (negTerm)
+        {
+            terms.push_back("-" + s.substr(signpos + 1));
+            negTerm = false;
+        }
+        else
+            terms.push_back(s.substr(signpos + 1));
+    }
 
     // building the polynomial
     leading = NULL;
     trailing = NULL;
 
-    for (int i; i < terms.size(); i++)
-        this->appendTerm(coeffs.at(i), exponents.at(i));
+    cout << "\n";
+
+    int xpos = -1;
+    int caretpos = -1;
+    double coeff = -1;
+    int expo = -1;
+    for (auto t : terms)
+    {
+        cout << "t: " << t << endl;
+
+        if (t[0] == '-')
+            negTerm = true;
+        xpos = t.find("x");
+        caretpos = t.find("^");
+
+        if (xpos == 0 || caretpos <= 0)
+            coeff = 1;
+        else
+            coeff = stod(t.substr(0, xpos));
+
+        if (xpos >= 0 && caretpos == -1)
+            expo = 1;
+        else if (xpos == -1 && caretpos == -1)
+            expo = 0;
+        else
+            expo = int(stod(t.substr(caretpos + 1)));
+
+        if (negTerm)
+        {
+            this->appendTerm(-1 * coeff, expo);
+        }
+        else
+        {
+            cout << "DOG";
+            this->appendTerm(coeff, expo);
+        }
+    }
     
     this->printPolynomial();
 }
@@ -138,12 +238,16 @@ void Polynomial::printPolynomial()
         curTerm = leading;
         while(curTerm)
         {
-            if (abs(curTerm->coeff) != 1 || curTerm->expo == 1)
+            if (abs(curTerm->coeff) != 1 || curTerm->expo == 0)
                 cout << curTerm->coeff;
+            if (curTerm->expo >= 1)
+                cout << "x";
             if (curTerm->expo > 1)
-                cout << "x^" << curTerm->expo;
-            if (curTerm != trailing)
+                cout << "^" << curTerm->expo;
+            if (curTerm != trailing && curTerm->coeff >= 0)
                 cout << " + ";
+            else if (curTerm != trailing && curTerm->coeff < 0)
+                cout << " - ";
             curTerm = curTerm->next;
         }
     }
