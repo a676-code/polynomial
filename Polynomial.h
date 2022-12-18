@@ -3,10 +3,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <cctype>
 #include <iostream>
 #include <vector>
-#include <sstream>
 #include <string>
 using namespace std;
 
@@ -28,7 +26,7 @@ class Polynomial
         ~Polynomial();
 
         void appendTerm(double, int);
-        
+        int evaluateAt(int x);
         int getCoeff(int);
         int getExpo(int);
         int getNumTerms();
@@ -38,14 +36,13 @@ class Polynomial
         vector<string> split(string, const char);
 };
 
+/// @brief default constructor
 Polynomial::Polynomial()
 {
     leading = NULL;
     trailing = NULL;
 }
 
-/// @brief creates a polynomial of the form given in s
-/// @param s 
 Polynomial::Polynomial(string s)
 {
     // removing spaces
@@ -70,11 +67,6 @@ Polynomial::Polynomial(string s)
     bool negTerm = false;
     int plusPos = s.find("+");
     int minusPos= s.find("-");
-    if (minusPos == 0)
-    {
-        firstTermNegative = true;
-        minusPos = s.find("-", 1);
-    }
 
     // no signs, one term
     if (plusPos == -1 && minusPos == -1)
@@ -113,60 +105,34 @@ Polynomial::Polynomial(string s)
     }
     else // plusses and minuses
     {
-        int signPos = -1;
-        int signPos2 = -1;
-        // first sign +
+        bool negTerm = false;
+        int signPos = -2;
+        int signPos2 = -2;
+
+        int plusPos = s.find("+");
+        int minusPos = s.find("-");
+
+        signPos = 0;
         if (plusPos < minusPos)
-        {
-            signPos = plusPos;
-            signPos2 = minusPos;
-        }
-        else // first sign -
-        {
-            signPos = minusPos;
             signPos2 = plusPos;
-        }
-        // adding first term
-        terms.push_back(s.substr(0, signPos));
-        // adding middle terms
-        while (signPos2 != -1)
-        {
-            if (negTerm)
-            {
-                // cout << "\t1 neg: " << "-" + s.substr(signPos + 1, signPos2 - signPos - 1);
-                terms.push_back("-" + s.substr(signPos + 1, signPos2 - signPos - 1));
-                negTerm = false;
-            }
-            else
-            {
-                // cout << "\t1 pos: " << s.substr(signPos, signPos2 - signPos) << endl;
-                terms.push_back(s.substr(signPos, signPos2 - signPos));
-            }
-            // moving signPos forward
-            signPos = signPos2;
-            // one will be -1 at the end, the other not
-            plusPos = s.find("+", signPos + 1);
-            minusPos = s.find("-", signPos + 1);
-            // + before -
-            if (plusPos < minusPos)
-                signPos2 = plusPos; // doesn't matter at the end
-            else // - before +
-            {
-                cout << "here";
-                if (minusPos != -1)
-                    negTerm = true;
-                signPos2 = minusPos;
-            }
-        }
-        // adding last term
-        if (negTerm)
-        {
-            terms.push_back("-" + s.substr(signPos + 1));
-            negTerm = false;
-        }
         else
+            signPos2 = minusPos;
+        
+        // terms.push_back(s.substr(signPos, signPos2));
+        while(signPos != -1)
         {
-            terms.push_back(s.substr(signPos + 1));
+            
+            cout << "here: "  << s.substr(signPos, signPos2 - signPos - 1) << endl;
+            terms.push_back(s.substr(signPos, signPos2 - signPos - 1));
+
+            // moving forward
+            signPos = signPos2;
+            plusPos = s.find("+", signPos2 + 1);
+            minusPos = s.find("-", signPos2 + 1);
+            if (plusPos < minusPos)
+                signPos2 = plusPos;
+            else
+                signPos2 = minusPos;
         }
     }
 
@@ -215,6 +181,7 @@ Polynomial::Polynomial(string s)
             this->appendTerm(coeff, expo);       
     }
     this->printPolynomial();
+    cout << endl;
 }
 
 Polynomial::~Polynomial()
@@ -246,6 +213,26 @@ void Polynomial::appendTerm(double c, int e)
         trailing->next = newTerm;
         trailing = newTerm;
     }
+}
+
+int Polynomial::evaluateAt(int x)
+{
+    int result = -std::numeric_limits<int>::max();
+    Term* curTerm;
+
+    if (!leading)
+        cout << "Polynomial empty";
+    else
+    {
+        result = 0;
+        curTerm = leading;
+        while (curTerm)
+        {
+            result += curTerm->coeff * pow(x, curTerm->expo);
+            curTerm = curTerm->next;
+        }
+    }
+    return result;
 }
 
 int Polynomial::getCoeff(int pos)
