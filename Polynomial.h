@@ -15,7 +15,7 @@ class Polynomial
     private:
         struct Term
         {
-            double coeff;
+            int coeff;
             int expo;
             Term* next;
         };
@@ -28,11 +28,13 @@ class Polynomial
         ~Polynomial();
 
         void appendTerm(double, int);
+        
+        int getCoeff(int);
+        int getExpo(int);
         int getNumTerms();
-        double getCoeff(int);
-        double getExpo(int);
         bool isEmpty();
         void printPolynomial();
+        string toString();
         vector<string> split(string, const char);
 };
 
@@ -66,108 +68,105 @@ Polynomial::Polynomial(string s)
     vector<string> terms;
     bool firstTermNegative = false;
     bool negTerm = false;
-    int pluspos = s.find("+");
-    int minuspos= s.find("-");
-    if (minuspos == 0)
+    int plusPos = s.find("+");
+    int minusPos= s.find("-");
+    if (minusPos == 0)
     {
         firstTermNegative = true;
-        minuspos = s.find("-", 1);
+        minusPos = s.find("-", 1);
     }
 
     // no signs, one term
-    if (pluspos == -1 && minuspos == -1)
+    if (plusPos == -1 && minusPos == -1)
         terms.push_back(s);
     // only plusses
-    else if (pluspos != -1 && minuspos == -1)
+    else if (plusPos != -1 && minusPos == -1)
     {
         // adding first term
-        terms.push_back(s.substr(0, pluspos));
-        int pluspos2 = s.find("+", pluspos + 1);
+        terms.push_back(s.substr(0, plusPos));
+        int plusPos2 = s.find("+", plusPos + 1);
         // adding middle terms
-        while (pluspos2 != -1)
+        while (plusPos2 != -1)
         {
-            terms.push_back(s.substr(pluspos + 1, pluspos2 - pluspos - 1));
-            pluspos = pluspos2;
-            pluspos2 = s.find("+", pluspos2 + 1);
+            terms.push_back(s.substr(plusPos + 1, plusPos2 - plusPos - 1));
+            plusPos = plusPos2;
+            plusPos2 = s.find("+", plusPos2 + 1);
         }
         // adding last term
-        terms.push_back(s.substr(pluspos + 1));
+        terms.push_back(s.substr(plusPos + 1));
     }
     // only minuses
-    else if (pluspos == -1 && minuspos != -1)
+    else if (plusPos == -1 && minusPos != -1)
     {
         // adding first term
-        terms.push_back(s.substr(0, minuspos));
-        int minuspos2 = s.find("-", minuspos + 1);
+        terms.push_back(s.substr(0, minusPos));
+        int minusPos2 = s.find("-", minusPos + 1);
         // adding middle terms
-        while (minuspos2 != string::npos)
+        while (minusPos2 != string::npos)
         {
-            terms.push_back("-" + s.substr(minuspos + 1, minuspos2 - minuspos - 1));
-            minuspos = minuspos2;
-            minuspos2 = s.find("-", minuspos2 + 1);
+            terms.push_back("-" + s.substr(minusPos + 1, minusPos2 - minusPos - 1));
+            minusPos = minusPos2;
+            minusPos2 = s.find("-", minusPos2 + 1);
         }
         // adding last term
-        terms.push_back("-" + s.substr(minuspos + 1));
+        terms.push_back("-" + s.substr(minusPos + 1));
     }
     else // plusses and minuses
     {
-        int signpos = -1;
-        int signpos2 = -1;
+        int signPos = -1;
+        int signPos2 = -1;
         // first sign +
-        if (pluspos < minuspos)
+        if (plusPos < minusPos)
         {
-            signpos = pluspos;
-            signpos2 = minuspos;
+            signPos = plusPos;
+            signPos2 = minusPos;
         }
         else // first sign -
         {
-            signpos = minuspos;
-            signpos2 = pluspos;
+            signPos = minusPos;
+            signPos2 = plusPos;
         }
         // adding first term
-        terms.push_back(s.substr(0, signpos));
+        terms.push_back(s.substr(0, signPos));
         // adding middle terms
-        while (signpos2 != -1)
+        while (signPos2 != -1)
         {
             if (negTerm)
             {
-                // cout << "\t1 neg: " << "-" + s.substr(signpos + 1, signpos2 - signpos - 1);
-                terms.push_back("-" + s.substr(signpos + 1, signpos2 - signpos - 1));
+                // cout << "\t1 neg: " << "-" + s.substr(signPos + 1, signPos2 - signPos - 1);
+                terms.push_back("-" + s.substr(signPos + 1, signPos2 - signPos - 1));
                 negTerm = false;
             }
             else
             {
-                // cout << "\t1 pos: " << s.substr(signpos, signpos2 - signpos) << endl;
-                terms.push_back(s.substr(signpos, signpos2 - signpos));
+                // cout << "\t1 pos: " << s.substr(signPos, signPos2 - signPos) << endl;
+                terms.push_back(s.substr(signPos, signPos2 - signPos));
             }
-            signpos = signpos2;
-            pluspos = s.find("+", signpos2 + 1);
-            minuspos = s.find("-", signpos2 + 1);
+            // moving signPos forward
+            signPos = signPos2;
+            // one will be -1 at the end, the other not
+            plusPos = s.find("+", signPos + 1);
+            minusPos = s.find("-", signPos + 1);
             // + before -
-            if (pluspos < minuspos)
-            {
-                if (pluspos != -1)
-                    signpos2 = pluspos;
-            }
+            if (plusPos < minusPos)
+                signPos2 = plusPos; // doesn't matter at the end
             else // - before +
             {
-                if (minuspos != -1)
-                negTerm = true;
-                signpos2 = minuspos;
+                cout << "here";
+                if (minusPos != -1)
+                    negTerm = true;
+                signPos2 = minusPos;
             }
         }
         // adding last term
         if (negTerm)
         {
-            // cout << "s again: " << s << endl;
-            // cout << "\t2 neg: " << "-" + s.substr(signpos) << endl;
-            terms.push_back("-" + s.substr(signpos + 1));
+            terms.push_back("-" + s.substr(signPos + 1));
             negTerm = false;
         }
         else
         {
-            // cout << "\t2 pos" << s.substr(signpos + 1) << endl;
-            terms.push_back(s.substr(signpos + 1));
+            terms.push_back(s.substr(signPos + 1));
         }
     }
 
@@ -249,6 +248,76 @@ void Polynomial::appendTerm(double c, int e)
     }
 }
 
+int Polynomial::getCoeff(int pos)
+{
+    Term* curTerm;
+    if (!leading)
+        return -std::numeric_limits<int>::max();
+    else
+    {
+        if (pos == 0)
+            return leading->coeff;
+        
+        curTerm = leading;
+        int curPos = 0;
+        while(curTerm != NULL && pos >= curPos)
+        {
+            if (pos == curPos)
+                return curTerm->coeff;
+            curPos++;
+            curTerm = curTerm->next;
+        }
+    }
+    return -std::numeric_limits<int>::max();
+}
+
+int Polynomial::getExpo(int pos)
+{
+    Term* curTerm;
+    if (!leading)
+        return -std::numeric_limits<int>::max();
+    else
+    {
+        if (pos == 0)
+            return leading->expo;
+        
+        curTerm = leading;
+        int curPos = 0;
+        while(curTerm != NULL && pos >= curPos)
+        {
+            if (pos == curPos)
+                return curTerm->expo;
+            curPos++;
+            curTerm = curTerm->next;
+        }
+    }
+    return -std::numeric_limits<int>::max();
+}
+
+int Polynomial::getNumTerms()
+{
+    int counter = 0;
+    Term* curTerm;
+
+    curTerm = leading;
+    while (curTerm != trailing)
+    {
+        counter++;
+        curTerm = curTerm->next;
+        if (curTerm == trailing)
+            counter++;
+    }
+    return counter;
+}
+
+bool Polynomial::isEmpty()
+{
+    if (!leading)
+        return true;
+    else
+        return false;
+}
+
 void Polynomial::printPolynomial()
 {
     Term* curTerm;
@@ -282,26 +351,38 @@ void Polynomial::printPolynomial()
     }
 }
 
-/// @brief splits a string into substrings based on the location of the character c in str
-/// @param str 
-/// @param c 
-/// @return 
-vector<string> Polynomial::split(string str, const char c)
+/// @brief convert Polynomial object to string
+/// @return the polynomial as a string
+string Polynomial::toString()
 {
-    string substring = "";
-	vector<string> subStrings;
-    for (auto x : str)
+    string result = "";
+    Term* curTerm;
+    if (!leading)
+        cout << "Polynomial empty";
+    else
     {
-        if (x == c)
+        curTerm = leading;
+        while (curTerm)
         {
-            subStrings.push_back(substring);
-            substring = "";
+            if (abs(curTerm->coeff) != 1 || curTerm->expo == 0)
+            {
+                if (curTerm->coeff < 0 && curTerm != leading)
+                    result.append(to_string(curTerm->coeff * -1));
+                else
+                    result.append(to_string(curTerm->coeff));
+            }
+            if (curTerm->expo >= 1)
+                result.append("x");
+            if (curTerm->expo > 1)
+                result.append("^" + to_string(curTerm->expo));
+            if (curTerm != trailing && curTerm->next->coeff >= 0)
+                result.append(" + ");
+            else if (curTerm != trailing && curTerm->next->coeff < 0)
+                result.append(" - ");
+            curTerm = curTerm->next;
         }
-        else
-            substring = substring + x;
     }
-    subStrings.push_back(substring);
-	return subStrings;
+    return result;
 }
 
 #endif
