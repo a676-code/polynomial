@@ -49,6 +49,8 @@ Polynomial::Polynomial(string s)
     // removing spaces
 	s.erase(remove_if(s.begin(), s.end(), ::isspace), s.end());
 
+    // cout << "s: " << s << endl;
+
     // input validation
 	for (int i = 0; i < s.length(); i++)
 	{
@@ -72,70 +74,84 @@ Polynomial::Polynomial(string s)
         minuspos = s.find("-", 1);
     }
 
+    // no signs, one term
     if (pluspos == -1 && minuspos == -1)
         terms.push_back(s);
     // only plusses
     else if (pluspos != -1 && minuspos == -1)
     {
+        // adding first term
         terms.push_back(s.substr(0, pluspos));
         int pluspos2 = s.find("+", pluspos + 1);
+        // adding middle terms
         while (pluspos2 != -1)
         {
             terms.push_back(s.substr(pluspos + 1, pluspos2 - pluspos - 1));
             pluspos = pluspos2;
             pluspos2 = s.find("+", pluspos2 + 1);
         }
+        // adding last term
         terms.push_back(s.substr(pluspos + 1));
     }
     // only minuses
     else if (pluspos == -1 && minuspos != -1)
     {
+        // adding first term
         terms.push_back(s.substr(0, minuspos));
         int minuspos2 = s.find("-", minuspos + 1);
+        // adding middle terms
         while (minuspos2 != string::npos)
         {
             terms.push_back("-" + s.substr(minuspos + 1, minuspos2 - minuspos - 1));
             minuspos = minuspos2;
             minuspos2 = s.find("-", minuspos2 + 1);
         }
+        // adding last term
         terms.push_back("-" + s.substr(minuspos + 1));
     }
     else // plusses and minuses
     {
         int signpos = -1;
         int signpos2 = -1;
+        // first sign +
         if (pluspos < minuspos)
         {
             signpos = pluspos;
             signpos2 = minuspos;
         }
-        else 
+        else // first sign -
         {
-            negTerm = true;
             signpos = minuspos;
             signpos2 = pluspos;
         }
         // adding first term
         terms.push_back(s.substr(0, signpos));
         // adding middle terms
-        while (signpos2 != string::npos)
+        while (signpos2 != -1)
         {
             if (negTerm)
             {
+                // cout << "\t1 neg: " << "-" + s.substr(signpos + 1, signpos2 - signpos - 1);
                 terms.push_back("-" + s.substr(signpos + 1, signpos2 - signpos - 1));
                 negTerm = false;
             }
             else
             {
-                terms.push_back(s.substr(signpos + 1, signpos2 - signpos - 1));
+                // cout << "\t1 pos: " << s.substr(signpos, signpos2 - signpos) << endl;
+                terms.push_back(s.substr(signpos, signpos2 - signpos));
             }
             signpos = signpos2;
             pluspos = s.find("+", signpos2 + 1);
             minuspos = s.find("-", signpos2 + 1);
+            // + before -
             if (pluspos < minuspos)
-                signpos2 = pluspos;
-            else
             {
+                if (pluspos != -1)
+                    signpos2 = pluspos;
+            }
+            else // - before +
+            {
+                if (minuspos != -1)
                 negTerm = true;
                 signpos2 = minuspos;
             }
@@ -143,11 +159,16 @@ Polynomial::Polynomial(string s)
         // adding last term
         if (negTerm)
         {
+            // cout << "s again: " << s << endl;
+            // cout << "\t2 neg: " << "-" + s.substr(signpos) << endl;
             terms.push_back("-" + s.substr(signpos + 1));
             negTerm = false;
         }
         else
+        {
+            // cout << "\t2 pos" << s.substr(signpos + 1) << endl;
             terms.push_back(s.substr(signpos + 1));
+        }
     }
 
     // building the polynomial
@@ -156,23 +177,18 @@ Polynomial::Polynomial(string s)
 
     cout << "\n";
 
-    if (firstTermNegative)
-        negTerm = true;
-
-    bool leadingNegative = false;
     int xpos = -1;
     int caretpos = -1;
     double coeff = -1;
     int expo = -1;
     for (int i = 0; i < terms.size(); i++)
     {
-        cout << "TERM: "  << terms.at(i) << endl;
+        // cout << "TERM: "  << terms.at(i) << endl;
 
         if (terms.at(i)[0] == '-')
-        {
             negTerm = true;
-            leadingNegative = true;
-        }
+        
+        // parsing
         xpos = terms.at(i).find("x");
         caretpos = terms.at(i).find("^");
 
@@ -190,16 +206,16 @@ Polynomial::Polynomial(string s)
 
         if (negTerm)
         {
-            if (leadingNegative && i == 0)
+            if (firstTermNegative && i == 0)
                 coeff = coeff * -1;
+                
             this->appendTerm(-1 * coeff, expo);
             negTerm = false;
         }
         else
-            this->appendTerm(coeff, expo);        
+            this->appendTerm(coeff, expo);       
     }
     this->printPolynomial();
-    cout << endl;
 }
 
 Polynomial::~Polynomial()
